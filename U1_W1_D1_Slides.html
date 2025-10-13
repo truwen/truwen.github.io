@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>U1_W1_D1_Slides</title>
+<style>
+  :root{
+    --bg:#0b1220;--ink:#0f172a;--card:#ffffff;--muted:#475569;--accent:#0b3954;--ring:#e2e8f0;--blue:#1e3a8a;--green:#047857;--amber:#b45309;--red:#b91c1c;--purple-speaker:#7c3aed;
+    --champs-c-color: #2563eb; --champs-h-color: #16a34a; --champs-a-color: #d97706; --champs-m-color: #be123c; --champs-p-color: #7c3aed;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  .deck{display:grid;grid-template-rows:auto auto 1fr auto;min-height:100vh}
+  .status-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:var(--card)}
+  .status-bar .title{font-weight:600}
+  .status-bar .progress{position:relative;width:120px;height:6px;background:var(--ring);border-radius:3px}
+  .status-bar .progress-bar{position:absolute;height:100%;background:var(--accent);border-radius:3px}
+  .champs-bar { display: flex; justify-content: center; align-items: stretch; gap: 8px; background: #f1f5f9; padding: 8px; border-bottom: 2px solid var(--ring); }
+  .champs-item { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background: var(--card); border-radius: 8px; padding: 4px 8px; width: 140px; text-align: center; border: 1px solid var(--ring); border-left-width: 5px; }
+  .champs-header { display: flex; align-items: center; gap: 4px; font-weight: 800; font-size: 1.2em; }
+  .champs-icon { width: 24px; height: 24px; }
+  .champs-desc { font-size: 0.9em; color: var(--muted); padding-top: 4px; font-weight: 500;}
+  #champs-item-c { border-left-color: var(--champs-c-color); } #champs-item-c .champs-header { color: var(--champs-c-color); }
+  #champs-item-h { border-left-color: var(--champs-h-color); } #champs-item-h .champs-header { color: var(--champs-h-color); }
+  #champs-item-a { border-left-color: var(--champs-a-color); } #champs-item-a .champs-header { color: var(--champs-a-color); }
+  #champs-item-m { border-left-color: var(--champs-m-color); } #champs-item-m .champs-header { color: var(--champs-m-color); }
+  #champs-item-p { border-left-color: var(--champs-p-color); } #champs-item-p .champs-header { color: var(--champs-p-color); }
+  .slide{display:none;flex-direction: column;justify-content:center;align-items:center;padding:2rem;background:var(--card);overflow:auto; height: 100%;}
+  .slide.active{display:flex}
+  .slide-content{max-width:900px;width:100%;text-align:center;}
+  .slide h1,.slide h2,.slide h3{margin:0 0 1.5rem;padding:0;color:var(--accent); text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.75rem;}
+  .slide h1{font-size:clamp(2rem, 8vw, 4rem)} .slide h2{font-size:clamp(1.5rem, 6vw, 3rem)}
+  .slide .icon { width: 1.2em; height: 1.2em; }
+  .slide-body{font-size:clamp(1rem, 4vw, 1.75rem); line-height:1.6; text-align:center;}
+  .slide-body ul, .slide-body ol { display: inline-block; text-align: left; margin-left:2rem; }
+  .lt-title { color: var(--blue) !important; } .lo-title { color: var(--green) !important; } .sc-title { color: var(--ink) !important; }
+  .speaker-icon { width: 1.5em; height: 1.5em; color: var(--purple-speaker); vertical-align: middle; margin-right: 0.5rem;}
+  mark { background-color: #fef08a; padding: 2px 6px; border-radius: 4px; }
+  
+  /* Box System with Shadows */
+  .box { border-radius: 12px; padding: 1rem; margin-top: 1rem; font-weight: 500; }
+  .box p { margin: 0; }
+  .box-green { background-color: #dcfce7; border: 1px solid #86efac; box-shadow: 3px 3px var(--green), -0.7em 0 0.4em rgba(4, 120, 87, 0.2); }
+  .box-yellow { background-color: #fefce8; border: 1px solid #fef08a; box-shadow: 3px 3px var(--amber), -0.7em 0 0.4em rgba(180, 83, 9, 0.2); }
+  .box-red { background-color: #fee2e2; border: 1px solid #fca5a5; box-shadow: 3px 3px var(--red), -0.7em 0 0.4em rgba(185, 28, 28, 0.2); }
+  .box-blue { background-color: #eff6ff; border: 1px solid #dbeafe; box-shadow: 3px 3px var(--blue), -0.7em 0 0.4em rgba(30, 58, 138, 0.2); }
+  
+  .timer-display{font-family:monospace;font-size:1.2rem;font-weight:700;background:var(--ink);color:var(--card);padding:4px 10px;border-radius:6px; transition: background-color 0.3s;}
+  .timer-display.pulse { background-color: var(--red); animation: pulse_1 1s infinite; }
+  .controls{display:flex;justify-content:center;align-items:center;padding:12px;gap:8px; flex-wrap: wrap;}
+  .control-group { display: flex; align-items: center; gap: 8px; padding: 0 12px; border-right: 2px solid var(--ring); }
+  .control-group:last-child { border-right: none; }
+  button{font-size:1rem;padding:10px 15px;border-radius:8px;border:none;cursor:pointer}
+  .nav-btn{background:var(--blue);color:#fff} .nav-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+  .timer-btn{background:var(--accent);color:#fff}
+  .time-input, #nameInput, #periodSelect { border: 1px solid var(--ring); padding: 8px; border-radius: 6px; background-color: white; text-align: center; font-size: 0.9rem; }
+  .time-input { width: 60px; }
+  .name-btn { background: var(--green); color: #fff; padding: 8px 12px; font-size: 0.9rem; }
+  .remove-btn { background: var(--red); }
+  #pickedName { font-weight: bold; background: var(--amber); color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 100px; text-align: center; }
+  .roster-manager { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--ring); border-radius: 8px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 300px; z-index: 100; margin-bottom: 10px; }
+  .roster-manager h4 { margin: 0 0 0.5rem; text-align: left; }
+  #rosterList { list-style: none; padding: 0; margin: 0 0 0.5rem; max-height: 150px; overflow-y: auto; border: 1px solid var(--ring); border-radius: 4px; }
+  #rosterList li { padding: 4px 8px; cursor: pointer; user-select: none; } #rosterList li.selected { background-color: #dbeafe; }
+  .roster-actions { display: flex; gap: 8px; }
+  
+  /* --- Animation Overlays --- */
+  .animation-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 200; opacity: 0; transition: opacity 0.3s; perspective: 800px; }
+  .animation-overlay.visible { display: flex; opacity: 1; }
+  .spinner { width: 250px; height: 250px; border-radius: 50%; background: conic-gradient(from 90deg at 50% 50%, #f44336, #ff9800, #ffeb3b, #4caf50, #2196f3, #9c27b0, #f44336); animation: spin3d 1s linear infinite; transform-style: preserve-3d; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); transform: rotateX(20deg); }
+  .winner-display { position: absolute; color: white; font-size: 3rem; font-weight: bold; text-shadow: 2px 2px 4px black; display: none; transform: scale(0); animation: winner-pop 0.5s 0.2s forwards; }
+  .confetti-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+  .confetti { position: absolute; width: 10px; height: 10px; background-color: red; opacity: 0; animation-name: fall; animation-timing-function: linear; animation-iteration-count: infinite; }
+  
+  .stop-sign-container { animation: stop-pulse 1s infinite; }
+  .stop-sign-border { position: relative; width: 250px; height: 250px; background-color: #fff; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); border-radius: 8px; display:flex; justify-content:center; align-items:center; }
+  .stop-sign-inner { width: 220px; height: 220px; background-color: var(--red); clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); display:flex; justify-content:center; align-items:center; }
+  .stop-text { color: white; font-size: 2.5rem; font-weight: bold; text-align: center; }
+  .led { position: absolute; width: 10px; height: 10px; background-color: #9ca3af; border-radius: 50%; animation: blink 1.6s infinite; }
+  @keyframes blink { 50% { background-color: #f87171; box-shadow: 0 0 5px #f87171, 0 0 8px #f87171; } }
+  
+  @keyframes spin3d { from { transform: rotateX(20deg) rotateZ(0deg); } to { transform: rotateX(20deg) rotateZ(360deg); } }
+  @keyframes winner-pop { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+  @keyframes fall { 0% { transform: translateY(-10vh) translateX(0) rotateZ(0deg); opacity: 1; } 100% { transform: translateY(110vh) translateX(var(--x-end)) rotateZ(720deg); opacity: 0; } }
+  @keyframes pulse_1 { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)}}
+  @keyframes stop-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+</style>
+</head>
+<body>
+<div id="animation-overlay" class="animation-overlay">
+  <div id="spinner" class="spinner"></div>
+  <div id="winner-display" class="winner-display"></div>
+  <div id="confetti-container" class="confetti-container"></div>
+</div>
+<div id="timesUpOverlay" class="animation-overlay">
+  <div class="stop-sign-container">
+    <div class="stop-sign-border">
+      <!-- LEDs will be generated here by JS -->
+      <div class="stop-sign-inner">
+        <div class="stop-text">TIME'S<br>UP!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="deck">
+  <div class="status-bar">
+    <div class="title" id="status-title">Lesson Title</div>
+    <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+  </div>
+  
+  <div class="champs-bar">
+    <div id="champs-item-c" class="champs-item"><div class="champs-header"><svg class="champs-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path></svg> C</div><div id="champs-c" class="champs-desc">--</div></div>
+    <div id="champs-item-h" class="champs-item"><div class="champs-header"><svg class="champs-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"></path></svg> H</div><div id="champs-h" class="champs-desc">--</div></div>
+    <div id="champs-item-a" class="champs-item"><div class="champs-header"><svg class="champs-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg> A</div><div id="champs-a" class="champs-desc">--</div></div>
+    <div id="champs-item-m" class="champs-item"><div class="champs-header"><svg class="champs-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-4.97 0-9 4.03-9 9 0 3.92 2.51 7.26 6 8.48V22h6v-2.52c3.49-1.22 6-4.56 6-8.48 0-4.97-4.03-9-9-9zm-4.25 15.26C6.27 16.5 5.5 15.32 5.5 14c0-1.65 1.35-3 3-3s3 1.35 3 3c0 1.32-.77 2.5-1.75 2.26L8.5 20l-1.25-2.74zM16 14c0 1.65-1.35 3-3 3s-3-1.35-3-3 1.35-3 3-3 3 1.35 3 3z"></path></svg> M</div><div id="champs-m" class="champs-desc">--</div></div>
+    <div id="champs-item-p" class="champs-item"><div class="champs-header"><svg class="champs-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path></svg> P</div><div id="champs-p" class="champs-desc">--</div></div>
+  </div>
+
+  <main id="slide-container">
+    <!-- Slides will be dynamically generated here -->
+  </main>
+
+  <div class="controls">
+    <div class="control-group">
+      <button id="homeBtn" class="nav-btn">Home</button>
+      <button id="prevBtn" class="nav-btn">Prev</button>
+      <button id="nextBtn" class="nav-btn">Next</button>
+    </div>
+    <div class="control-group">
+        <button id="timerToggleBtn" class="timer-btn">Slide Time</button>
+        <input type="number" id="customMinutesInput" class="time-input" min="0" max="99" value="5" placeholder="M" />
+        <input type="number" id="customSecondsInput" class="time-input" min="0" max="59" value="0" placeholder="S" />
+        <button id="startPauseBtn" class="timer-btn">Start</button>
+        <button id="resetBtn" class="timer-btn">Reset</button>
+        <div id="timerDisplay" class="timer-display">0:00</div>
+    </div>
+    <div class="control-group" style="position: relative;">
+        <select id="periodSelect">
+            <option value="1">P1</option><option value="2">P2</option><option value="3">P3</option>
+            <option value="4">P4</option><option value="5">P5</option><option value="6">P6</option>
+            <option value="7">P7</option>
+        </select>
+        <input type="text" id="nameInput" placeholder="Add name...">
+        <button id="addNameBtn" class="name-btn">Add</button>
+        <button id="pickNameBtn" class="name-btn">Cold Call</button>
+        <div id="pickedName">...</div>
+        <button id="manageRosterBtn" class="name-btn">Manage</button>
+        <div id="rosterManager" class="roster-manager">
+            <h4>Class Roster</h4>
+            <ul id="rosterList"></ul>
+            <div class="roster-actions">
+                <button id="removeSelectedBtn" class="name-btn remove-btn">Remove</button>
+                <button id="clearAllBtn" class="name-btn remove-btn">Clear All</button>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// #####################################################################################
+// #####################################################################################
+//
+//                          --- EDIT YOUR LESSON CONTENT BELOW ---
+//
+// --- HOW TO CUSTOMIZE YOUR SLIDES ---
+//
+// 1. COLORED BOXES: To make text stand out, wrap it in a div with a class.
+//    - <div class="box box-green">Your text here</div>
+//    - <div class="box box-yellow">Your text here</div>
+//    - <div class="box box-red">Your text here</div>
+//    - <div class="box box-blue">Your text here</div>
+//
+// 2. ECHO READING: To highlight text for students to read, wrap it with <mark>.
+//    - Example: I will read, then you will read. <mark>This part is for students.</mark>
+//
+// 3. ADD/REMOVE SLIDES: This is a permanent action.
+//    - To ADD a new slide, copy the 'newSlideTemplate' block below and paste it
+//      into the `lessonContent` list where you want it to appear.
+//    - To REMOVE a slide, simply delete its entire block (from `{` to `},`)
+//      from the `lessonContent` list.
+//
+/*
+const newSlideTemplate = {
+  title: "New Slide",
+  header: `<h2>New Slide Title</h2>`,
+  body: `<p>Add your content here.</p>`,
+  champs: { c: "...", h: "...", a: "...", m: "...", p: "..." }
+};
+*/
+// #####################################################################################
+
+let lessonContent = [
+    {
+        title: "Entry Task",
+        timer: 180,
+        header: `<h2>Entry Task (3:00)</h2>`,
+        body: `<div class="box box-yellow">In your notebook, write one sentence describing your role's main job for today's station.</div>`,
+        champs: { c: "Level 0: Silent", h: "Check your notebook", a: "Writing in notebook", m: "Stay in your seat", p: "Completing the prompt" }
+    },
+    {
+        title: "Agenda",
+        header: `<h2>Today's Plan: Station Day 1</h2>`,
+        body: `
+            <ol>
+                <li>Entry Task & Objectives</li>
+                <li>Station Rotation 1</li>
+                <li>Clean Up & Reset</li>
+                <li>Exit Ticket</li>
+            </ol>
+        `,
+        champs: { c: "Level 0: Silent", h: "Raise hand", a: "Tracking the speaker", m: "Stay in your seat", p: "Listening" }
+    },
+    {
+        title: "Learning Target",
+        header: `<h2 class="lt-title"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-8c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm5 0c0 2.76-2.24 5-5 5s-5-2.24-5-5 2.24-5 5-5c1.38 0 2.63.56 3.54 1.46L12 9.41V7h2v5h-5v-2h2.59c-.92-1.22-2.43-2-4.09-2-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4z"/></svg>Learning Target</h2>`,
+        body: `<p>I can <mark>apply my assigned team role</mark> to <mark>complete a task</mark> at one of the three build rotation stations.</p>`,
+        champs: { c: "Level 2: Choral Read", h: "Raise hand", a: "Reading together", m: "Stay in your seat", p: "All voices" }
+    },
+    {
+        title: "Language Objective",
+        header: `<h2 class="lo-title"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H5.17L4 17.17V4m0-2c-1.1 0-2 .9-2 2v15l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H4zm6 10v-1.4c0-.41.23-.78.58-.95.83-.4 1.42-1.14 1.42-2.06 0-1.21-.97-2.19-2.17-2.19S7.66 6.38 7.66 7.59H6.16c0-1.97 1.61-3.59 3.67-3.59s3.67 1.62 3.67 3.59c0 1.25-.64 2.35-1.63 2.97-.4.26-.64.7-.64 1.18V12H10z"/></svg>Language Objective</h2>`,
+        body: `<p>I can <mark>use sentence frames</mark> to communicate with teammates about our roles and tasks.</p>`,
+        champs: { c: "Level 2: Choral Read", h: "Raise hand", a: "Reading together", m: "Stay in your seat", p: "All voices" }
+    },
+    {
+        title: "Success Criteria",
+        header: `<h2 class="sc-title"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>Success Criteria</h2>`,
+        body: `
+            <ul>
+                <li>I followed the procedures for my station.</li>
+                <li>I used my role to help my team make progress.</li>
+                <li>I used a sentence frame to talk to my team.</li>
+            </ul>`,
+        champs: { c: "Level 1: Partner Whisper", h: "Ask your partner first", a: "Whisper to partner", m: "Stay in your seat", p: "Both partners share" }
+    },
+    {
+        title: "Station Rotation 1",
+        timer: 1800,
+        header: `<h2>Station Rotation 1 (30:00)</h2>`,
+        body: `
+            <div class="station-grid">
+                <div class="station-card" style="border-color: var(--blue);">
+                    <h3 style="color: var(--blue);">Station 1: Build BaseBot</h3>
+                    <ul>
+                        <li><b>Teams:</b> 1 & 2</li>
+                        <li><b>Task:</b> Follow instructions to build the BaseBot chassis.</li>
+                        <li><b>Roles:</b> Builder leads, Parts Manager finds pieces, QC checks work, Scribe documents progress.</li>
+                    </ul>
+                </div>
+                <div class="station-card" style="border-color: var(--amber);">
+                    <h3 style="color: var(--amber);">Station 2: Kit Inventory</h3>
+                    <ul>
+                        <li><b>Teams:</b> 3 & 4</li>
+                        <li><b>Task:</b> Use the inventory sheet to check that all parts are present.</li>
+                        <li><b>Roles:</b> Scribe checks off list, Parts Manager organizes, Builder & QC count pieces.</li>
+                    </ul>
+                </div>
+                <div class="station-card" style="border-color: var(--green);">
+                    <h3 style="color: var(--green);">Station 3: Team Planning</h3>
+                    <ul>
+                        <li><b>Team:</b> 5</li>
+                        <li><b>Task:</b> Review the "Sumo Bot" challenge rules and brainstorm design ideas.</li>
+                        <li><b>Roles:</b> Scribe takes notes, all members contribute ideas and sketches.</li>
+                    </ul>
+                </div>
+            </div>
+        `,
+        champs: { c: "Level 2: Team Talk", h: "Ask 3 then me", a: "Working on your station task", m: "Stay at your station", p: "All team members participating" }
+    },
+    {
+        title: "Exit Ticket",
+        timer: 180,
+        header: `<h2>Exit Ticket (3:00)</h2>`,
+        body: `<div class="box box-red">In your notebook, answer: <br>One success our team had was ________ and one challenge was ________.</div>`,
+        champs: { c: "Level 0: Silent", h: "No questions", a: "Independent writing", m: "Stay in your seat until dismissed", p: "Completing the reflection" }
+    }
+];
+
+
+// #####################################################################################
+// #####################################################################################
+//
+//                          --- DO NOT EDIT BELOW THIS LINE ---
+//
+// #####################################################################################
+// #####################################################################################
+</script>
+<script>
+  // --- Core Application Logic (Do not edit) ---
+  const slideContainer = document.getElementById('slide-container');
+  let slides = [];
+
+  function buildSlides() {
+    slideContainer.innerHTML = '';
+    lessonContent.forEach(data => {
+      const slide = document.createElement('div');
+      slide.classList.add('slide');
+      slide.dataset.title = data.title || 'Untitled';
+      if(data.timer) slide.dataset.timer = data.timer;
+      if(data.champs) {
+        slide.dataset.champsC = data.champs.c || '--';
+        slide.dataset.champsH = data.champs.h || '--';
+        slide.dataset.champsA = data.champs.a || '--';
+        slide.dataset.champsM = data.champs.m || '--';
+        slide.dataset.champsP = data.champs.p || '--';
+      }
+      
+      const content = document.createElement('div');
+      content.classList.add('slide-content');
+      
+      const header = document.createElement('div');
+      if (data.header) header.innerHTML = data.header;
+      
+      const body = document.createElement('div');
+      body.classList.add('slide-body');
+      if (data.body) body.innerHTML = data.body;
+
+      content.appendChild(header);
+      content.appendChild(body);
+      slide.appendChild(content);
+      slideContainer.appendChild(slide);
+    });
+    slides = Array.from(document.querySelectorAll('.slide'));
+  }
+
+
+  const statusTitle=document.getElementById('status-title');
+  const progressBar=document.getElementById('progress-bar');
+  const homeBtn=document.getElementById('homeBtn');
+  const prevBtn=document.getElementById('prevBtn');
+  const nextBtn=document.getElementById('nextBtn');
+  
+  let current=0, timerInterval=null, remaining=0, running=false, confettiInterval = null;
+  
+  const champsC = document.getElementById('champs-c');
+  const champsH = document.getElementById('champs-h');
+  const champsA = document.getElementById('champs-a');
+  const champsM = document.getElementById('champs-m');
+  const champsP = document.getElementById('champs-p');
+
+  const timerDisplay=document.getElementById('timerDisplay');
+  const timerToggleBtn = document.getElementById('timerToggleBtn');
+  const customMinutesInput = document.getElementById('customMinutesInput');
+  const customSecondsInput = document.getElementById('customSecondsInput');
+  const startPauseBtn = document.getElementById('startPauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  let useSlideDuration = true;
+  
+  const timesUpOverlay = document.getElementById('timesUpOverlay');
+
+  const periodSelect = document.getElementById('periodSelect');
+  const nameInput = document.getElementById('nameInput');
+  const addNameBtn = document.getElementById('addNameBtn');
+  const pickNameBtn = document.getElementById('pickNameBtn');
+  const pickedName = document.getElementById('pickedName');
+  const manageRosterBtn = document.getElementById('manageRosterBtn');
+  const rosterManager = document.getElementById('rosterManager');
+  const rosterList = document.getElementById('rosterList');
+  const removeSelectedBtn = document.getElementById('removeSelectedBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
+
+  const animationOverlay = document.getElementById('animation-overlay');
+  const spinner = document.getElementById('spinner');
+  const winnerDisplay = document.getElementById('winner-display');
+  const confettiContainer = document.getElementById('confetti-container');
+
+  let studentNames = [];
+  let namesToPickFrom = [];
+  let alreadyPickedNames = [];
+  let lastClickedIndex = -1;
+
+  function saveRoster() {
+    const period = periodSelect.value;
+    localStorage.setItem(`roster_p${period}`, JSON.stringify(studentNames));
+  }
+
+  function loadRoster() {
+    const period = periodSelect.value;
+    const savedRoster = localStorage.getItem(`roster_p${period}`);
+    studentNames = savedRoster ? JSON.parse(savedRoster) : [];
+    initializeNamePicker();
+  }
+
+  function initializeNamePicker() {
+    namesToPickFrom = [...studentNames];
+    alreadyPickedNames = [];
+    renderRoster();
+  }
+
+  function renderRoster() {
+    rosterList.innerHTML = '';
+    studentNames.forEach(name => {
+      const li = document.createElement('li');
+      li.textContent = name;
+      rosterList.appendChild(li);
+    });
+  }
+  
+  function addName() {
+    const name = nameInput.value.trim();
+    if (name && !studentNames.includes(name)) {
+      studentNames.push(name);
+      if (!alreadyPickedNames.includes(name)) {
+          namesToPickFrom.push(name);
+      }
+      nameInput.value = '';
+      nameInput.focus();
+      renderRoster();
+      saveRoster();
+    }
+  }
+
+  function pickName() {
+    if (studentNames.length === 0) {
+      pickedName.textContent = 'Add names!';
+      return;
+    }
+    
+    spinner.style.display = 'block';
+    winnerDisplay.style.display = 'none';
+    animationOverlay.classList.add('visible');
+    
+    if (confettiInterval) clearInterval(confettiInterval);
+
+
+    setTimeout(() => {
+        if (namesToPickFrom.length === 0) {
+            namesToPickFrom = [...studentNames]; // Refill from the master list
+            alreadyPickedNames = [];
+        }
+
+        const randomIndex = Math.floor(Math.random() * namesToPickFrom.length);
+        const winner = namesToPickFrom[randomIndex];
+        
+        namesToPickFrom.splice(randomIndex, 1);
+        alreadyPickedNames.push(winner);
+        
+        pickedName.textContent = winner;
+        winnerDisplay.textContent = winner;
+        
+        spinner.style.display = 'none';
+        winnerDisplay.style.display = 'block';
+        
+        confettiInterval = setInterval(launchConfetti, 500);
+
+        setTimeout(() => {
+            animationOverlay.classList.remove('visible');
+            clearInterval(confettiInterval);
+        }, 3000);
+
+    }, 2000); // Spin for 2 seconds
+  }
+  
+  function launchConfetti() {
+    const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+    for (let i = 0; i < 30; i++) { 
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        
+        const isRectangle = Math.random() > 0.5;
+        confetti.style.width = isRectangle ? '6px' : '10px';
+        confetti.style.height = isRectangle ? '15px' : '10px';
+        
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animationDuration = (Math.random() * 3 + 2) + 's'; // 2-5 seconds
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.setProperty('--x-end', (Math.random() * 200 - 100) + 'px');
+
+        confetti.addEventListener('animationend', () => {
+            confetti.remove();
+        });
+
+        confettiContainer.appendChild(confetti);
+    }
+}
+
+
+  function removeSelectedNames() {
+      const selectedItems = Array.from(rosterList.querySelectorAll('.selected'));
+      const namesToRemove = selectedItems.map(item => item.textContent);
+
+      studentNames = studentNames.filter(name => !namesToRemove.includes(name));
+      namesToPickFrom = namesToPickFrom.filter(name => !namesToRemove.includes(name));
+      alreadyPickedNames = alreadyPickedNames.filter(name => !namesToRemove.includes(name));
+      
+      renderRoster();
+      saveRoster();
+  }
+
+  function clearAllNames() {
+      studentNames = [];
+      namesToPickFrom = [];
+      alreadyPickedNames = [];
+      renderRoster();
+      saveRoster();
+  }
+
+  rosterList.addEventListener('click', (e) => {
+    if (e.target.tagName === 'LI') {
+        const items = Array.from(rosterList.children);
+        const currentIndex = items.indexOf(e.target);
+
+        if (!e.ctrlKey && !e.shiftKey) {
+            items.forEach(item => item.classList.remove('selected'));
+            e.target.classList.add('selected');
+        } else if (e.ctrlKey) {
+            e.target.classList.toggle('selected');
+        } else if (e.shiftKey && lastClickedIndex !== -1) {
+            items.forEach(item => item.classList.remove('selected'));
+            const start = Math.min(lastClickedIndex, currentIndex);
+            const end = Math.max(lastClickedIndex, currentIndex);
+            for (let i = start; i <= end; i++) {
+                items[i].classList.add('selected');
+            }
+        }
+        lastClickedIndex = currentIndex;
+    }
+  });
+
+
+  addNameBtn.addEventListener('click', addName);
+  nameInput.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') addName();
+  });
+  pickNameBtn.addEventListener('click', pickName);
+  manageRosterBtn.addEventListener('click', () => {
+    rosterManager.style.display = rosterManager.style.display === 'block' ? 'none' : 'block';
+  });
+  removeSelectedBtn.addEventListener('click', removeSelectedNames);
+  clearAllBtn.addEventListener('click', clearAllNames);
+  periodSelect.addEventListener('change', loadRoster);
+
+
+  function updateChamps(slide) {
+    champsC.textContent = slide.dataset.champsC || '--';
+    champsH.textContent = slide.dataset.champsH || '--';
+    champsA.textContent = slide.dataset.champsA || '--';
+    champsM.textContent = slide.dataset.champsM || '--';
+    champsP.textContent = slide.dataset.champsP || '--';
+  }
+
+  function show(idx) {
+    slides.forEach((s,i)=>s.classList.toggle('active', i===idx));
+    current=idx;
+    if(slides.length > 0) {
+      const slide=slides[current];
+      const title=slide.dataset.title || 'Slide';
+      statusTitle.textContent=`${current+1}/${slides.length} - ${title}`;
+      progressBar.style.width=`${(current+1)/slides.length*100}%`;
+      updateChamps(slide);
+    } else {
+      statusTitle.textContent = 'No Slides';
+      progressBar.style.width = '0%';
+    }
+    prevBtn.disabled=(current===0);
+    nextBtn.disabled=(current===slides.length-1);
+    resetTimer();
+  }
+  
+  function updateDisplay() {
+    const mins=Math.floor(remaining/60);
+    const secs=(remaining%60).toString().padStart(2,'0');
+    timerDisplay.textContent=`${mins}:${secs}`;
+  }
+
+  function tick(){
+    if(!running) return;
+    remaining--;
+    updateDisplay();
+    if(remaining<=10 && remaining > 0){timerDisplay.classList.add('pulse');}
+    if(remaining<=0){
+      stopTimer(true);
+    }
+  }
+
+  function startTimer(){
+    if(remaining > 0 && !running){
+      running=true; 
+      startPauseBtn.textContent='Pause';
+      timerInterval=setInterval(tick,1000);
+    }
+  }
+
+  function stopTimer(ended=false){
+    running=false;
+    clearInterval(timerInterval);
+    startPauseBtn.textContent='Start';
+    timerDisplay.classList.remove('pulse');
+    if(ended){
+      timesUpOverlay.classList.add('visible');
+      setTimeout(() => {
+        timesUpOverlay.classList.remove('visible');
+      }, 3000);
+    }
+  }
+  
+  function toggleTimer() {
+      if (running) {
+          running = false;
+          clearInterval(timerInterval);
+          startPauseBtn.textContent = 'Resume';
+      } else if (remaining > 0) {
+          startTimer();
+      }
+  }
+
+  function resetTimer(){
+    stopTimer();
+    let initialTime = 0;
+    if (slides.length > 0 && useSlideDuration) {
+        initialTime = slides[current] && slides[current].dataset.timer ? parseInt(slides[current].dataset.timer, 10) : 0;
+    } else {
+        const minutes = parseInt(customMinutesInput.value, 10) || 0;
+        const seconds = parseInt(customSecondsInput.value, 10) || 0;
+        initialTime = (minutes * 60) + seconds;
+    }
+    remaining = initialTime;
+    updateDisplay();
+    startPauseBtn.textContent = 'Start';
+  }
+
+
+  homeBtn.onclick=()=>show(0);
+  prevBtn.onclick=()=>show(Math.max(0, current-1));
+  nextBtn.onclick=()=>show(Math.min(slides.length-1, current+1));
+  startPauseBtn.onclick = toggleTimer;
+  resetBtn.onclick = resetTimer;
+  
+  timerToggleBtn.onclick = () => {
+      useSlideDuration = !useSlideDuration;
+      timerToggleBtn.textContent = useSlideDuration ? 'Slide Time' : 'Custom';
+      document.querySelectorAll('.time-input').forEach(el => el.style.display = useSlideDuration ? 'none' : 'inline-block');
+      resetTimer();
+  };
+  
+  [customMinutesInput, customSecondsInput].forEach(input => {
+    input.onchange = () => { if (!useSlideDuration) resetTimer(); };
+  });
+
+  document.onkeydown=e=>{
+    const focusedEl = document.activeElement;
+    if (focusedEl.closest('.control-group')) return;
+    if(e.key==='ArrowLeft') prevBtn.click();
+    if(e.key==='ArrowRight') nextBtn.click();
+    if(e.key==='Home') homeBtn.click();
+  };
+  
+  // Initial setup call
+  // Generate LEDs for stop sign
+  const stopSignBorder = document.querySelector('.stop-sign-border');
+  const numLeds = 16;
+  for(let i=0; i<numLeds; i++) {
+    const led = document.createElement('div');
+    led.className = 'led';
+    const angle = (i / numLeds) * 2 * Math.PI;
+    const x = 50 + 47 * Math.cos(angle);
+    const y = 50 + 47 * Math.sin(angle);
+    led.style.left = `${x}%`;
+    led.style.top = `${y}%`;
+    led.style.transform = 'translate(-50%, -50%)';
+    led.style.animationDelay = `${(i / numLeds) * 1.6}s`;
+    stopSignBorder.appendChild(led);
+  }
+  buildSlides();
+  loadRoster();
+  timerToggleBtn.textContent = useSlideDuration ? 'Slide Time' : 'Custom';
+  document.querySelectorAll('.time-input').forEach(el => el.style.display = useSlideDuration ? 'none' : 'inline-block');
+  show(0);
+</script>
+</body>
+</html>
+
