@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VEX IQ Pen Holder – Drawing Generator (v2.1 Connected + Adaptive Detail)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 18px; }
+    .wrap { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: start; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    label { display:block; font-size: 12px; color:#333; margin-top: 10px; }
+    input, select, textarea, button { width: 100%; box-sizing: border-box; padding: 8px; border-radius: 8px; border: 1px solid #ccc; }
+    button { cursor:pointer; }
+    canvas { width: 100%; height: 420px; border: 1px dashed #bbb; border-radius: 10px; background:#fff; }
+    .hint { font-size: 12px; color:#555; line-height: 1.25rem; }
+    .small { font-size: 11px; color:#666; }
+    .pill { display:inline-block; padding: 2px 8px; border: 1px solid #ddd; border-radius: 999px; font-size: 12px; margin-left: 8px; }
+    textarea { height: 270px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    .inline { display:flex; gap:8px; align-items:center; }
+    .inline input[type="checkbox"] { width:auto; transform: scale(1.2); }
+  </style>
+</head>
+<body>
+  <h2>VEX IQ Pen Holder – Drawing Generator <span class="pill">v2.1</span></h2>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="hint">
+        <b>Start setup:</b><br>
+        Place robot at the paper “start dot”, <b>facing RIGHT</b>.<br>
+        Assumes: <b>+X = right</b>, <b>+Y = down</b>.
+      </div>
+
+      <label>Mode</label>
+      <select id="mode">
+        <option value="emoji">Emoji</option>
+        <option value="text">Text (Name)</option>
+      </select>
+
+      <label>Emoji (8 options)</label>
+      <select id="emoji">
+        <option value="smile">🙂 Smiley</option>
+        <option value="frown">🙁 Frown</option>
+        <option value="heart">♥ Heart</option>
+        <option value="star">★ Star</option>
+        <option value="bolt">⚡ Lightning</option>
+        <option value="note">♫ Music Note</option>
+        <option value="poop">💩 “Poop-ish” swirl</option>
+        <option value="peace">☮ Peace</option>
+      </select>
+
+      <label>Text to write (A–Z, 0–9, space)</label>
+      <input id="text" value="JEREMIAH" />
+
+      <label>Text style</label>
+      <select id="textStyle">
+        <option value="single">Single stroke (recommended)</option>
+        <option value="bold">Bold (double pass offset)</option>
+        <option value="shadow">3D Shadow (offset pass)</option>
+      </select>
+
+      <div class="row">
+        <div>
+          <label>Drawing width (mm)</label>
+          <input id="wmm" type="number" value="180" />
+        </div>
+        <div>
+          <label>Drawing height (mm)</label>
+          <input id="hmm" type="number" value="180" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Margin (mm)</label>
+          <input id="margin" type="number" value="12" />
+        </div>
+        <div>
+          <label>Curve detail</label>
+          <select id="detail">
+            <option value="low">Low (best accuracy)</option>
+            <option value="med" selected>Medium</option>
+            <option value="high">High (best looks, more drift)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Drive speed (%)</label>
+          <input id="driveVel" type="number" value="16" />
+        </div>
+        <div>
+          <label>Turn speed (%)</label>
+          <input id="turnVel" type="number" value="12" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Min segment (mm)</label>
+          <input id="minSeg" type="number" value="8" />
+        </div>
+        <div>
+          <label>Letter spacing (mm)</label>
+          <input id="letterSpace" type="number" value="4" />
+        </div>
+      </div>
+
+      <div class="inline" style="margin-top:10px">
+        <input id="connected" type="checkbox" checked />
+        <div style="font-size:12px">
+          <b>Connected lines</b> (pen stays down on small turns)
+        </div>
+      </div>
+
+      <label>Lift pen during drawing only if turn exceeds (degrees)</label>
+      <input id="turnLiftDeg" type="number" value="60" min="0" max="180" />
+
+      <div class="inline" style="margin-top:10px">
+        <input id="forceClose" type="checkbox" checked />
+        <div style="font-size:12px">
+          <b>Force close</b> closed shapes (circles end at start)
+        </div>
+      </div>
+
+      <label>Pen lift angle (degrees) – UP position (your build: UP is NEGATIVE)</label>
+      <input id="penUpDeg" type="number" value="-70" />
+
+      <label>Pen settle wait (ms) after lift/drop</label>
+      <input id="penWaitMs" type="number" value="110" />
+
+      <label>Distance gain (fine tuning)</label>
+      <input id="distGain" type="number" step="0.01" value="1.00" />
+
+      <label>Update</label>
+      <button id="btn">Update preview + generate VEXcode IQ Python</button>
+
+      <div class="small" style="margin-top:10px">
+        Ports: left drive <b>1</b>, right drive <b>6</b> (reversed), pen motor <b>7</b>.<br>
+        Uses <b>SmartDrive + Brain Inertial</b>.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hint"><b>Preview (not to scale)</b></div>
+      <canvas id="cv" width="900" height="520"></canvas>
+
+      <label>Generated VEXcode IQ Python (paste into VEXcode IQ Python)</label>
+      <textarea id="out" spellcheck="false"></textarea>
+      <button id="copy">Copy code</button>
+    </div>
+  </div>
+
+<script>
+/** =========================
+ *  Geometry helpers
+ *  ========================= */
+function pt(x,y){ return {x,y}; }
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
+function bbox(strokes){
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const s of strokes){
+    for(const p of s){
+      minX=Math.min(minX,p.x); minY=Math.min(minY,p.y);
+      maxX=Math.max(maxX,p.x); maxY=Math.max(maxY,p.y);
+    }
+  }
+  if(!isFinite(minX)) return {minX:0,minY:0,maxX:0,maxY:0,w:0,h:0};
+  return {minX,minY,maxX,maxY,w:maxX-minX,h:maxY-minY};
+}
+
+function strokeBBox(st){
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const p of st){
+    minX=Math.min(minX,p.x); minY=Math.min(minY,p.y);
+    maxX=Math.max(maxX,p.x); maxY=Math.max(maxY,p.y);
+  }
+  if(!isFinite(minX)) return {minX:0,minY:0,maxX:0,maxY:0,w:0,h:0};
+  return {minX,minY,maxX,maxY,w:maxX-minX,h:maxY-minY};
+}
+
+function translateStroke(st, dx, dy){ return st.map(p=>pt(p.x+dx, p.y+dy)); }
+function scaleStroke(st, sx, sy){ return st.map(p=>pt(p.x*sx, p.y*sy)); }
+
+function simplifyByMinSeg(st, minSeg, forceClose){
+  if(st.length<=2) return st.slice();
+
+  const epsClose = 0.5; // in stroke units (before mm fit)
+  const isClosed = dist(st[0], st[st.length-1]) < epsClose;
+
+  const out=[st[0]];
+  let last=st[0];
+  for(let i=1;i<st.length;i++){
+    if(dist(last, st[i]) >= minSeg){
+      out.push(st[i]);
+      last = st[i];
+    }
+  }
+
+  const end = st[st.length-1];
+  if(dist(out[out.length-1], end) > 0.001) out.push(end);
+
+  if(forceClose && isClosed){
+    const start = out[0];
+    if(dist(out[out.length-1], start) > 0.001){
+      out.push(pt(start.x, start.y));
+    }
+  }
+  return out;
+}
+
+function circleStroke(cx, cy, r, steps){
+  const st=[];
+  for(let i=0;i<steps;i++){
+    const t=(i/steps)*Math.PI*2;
+    st.push(pt(cx + r*Math.cos(t), cy + r*Math.sin(t)));
+  }
+  st.push(st[0]); // close
+  return st;
+}
+
+function arcStroke(cx, cy, r, a0, a1, steps){
+  const st=[];
+  for(let i=0;i<=steps;i++){
+    const t=a0 + (i/steps)*(a1-a0);
+    st.push(pt(cx + r*Math.cos(t), cy + r*Math.sin(t)));
+  }
+  return st;
+}
+
+function polyStroke(points, closed=false){
+  const st=points.map(p=>pt(p.x,p.y));
+  if(closed && st.length>1) st.push(pt(st[0].x, st[0].y));
+  return st;
+}
+
+/** =========================
+ *  Emoji generators
+ *  ========================= */
+function makeEmoji(kind, detail){
+  const steps = (detail==="low") ? 18 : (detail==="med" ? 28 : 44);
+  const stepsSmall = (detail==="low") ? 12 : (detail==="med" ? 18 : 26);
+
+  const strokes=[];
+  const cx=50, cy=50, R=42;
+
+  function faceBase(){ strokes.push(circleStroke(cx,cy,R,steps)); }
+
+  if(kind==="smile" || kind==="frown"){
+    faceBase();
+    strokes.push(circleStroke(cx-16, cy-10, 6, stepsSmall));
+    strokes.push(circleStroke(cx+16, cy-10, 6, stepsSmall));
+    if(kind==="smile"){
+      strokes.push(arcStroke(cx, cy+10, 22, Math.PI*0.05, Math.PI*0.95, stepsSmall+8));
+    } else {
+      strokes.push(arcStroke(cx, cy+28, 22, Math.PI*1.05, Math.PI*1.95, stepsSmall+8));
+    }
+  }
+
+  if(kind==="heart"){
+    const st=[];
+    const n = (detail==="low") ? 70 : (detail==="med" ? 110 : 160);
+    for(let i=0;i<=n;i++){
+      const t = (i/n)*Math.PI*2;
+      const x = 16*Math.pow(Math.sin(t),3);
+      const y = 13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t);
+      st.push(pt(cx + x*2.0, cy - y*2.0));
+    }
+    strokes.push(st);
+  }
+
+  if(kind==="star"){
+    const pts=[];
+    const r1=40, r2=16;
+    for(let i=0;i<10;i++){
+      const ang = -Math.PI/2 + i*(Math.PI/5);
+      const r = (i%2===0) ? r1 : r2;
+      pts.push(pt(cx + r*Math.cos(ang), cy + r*Math.sin(ang)));
+    }
+    strokes.push(polyStroke(pts,true));
+  }
+
+  if(kind==="bolt"){
+    const pts=[ pt(60,10), pt(42,46), pt(60,46), pt(40,92), pt(58,56), pt(40,56) ];
+    strokes.push(polyStroke(pts,false));
+  }
+
+  if(kind==="note"){
+    const head=[];
+    const n = (detail==="low") ? 22 : (detail==="med" ? 30 : 44);
+    const hx=42, hy=70, rx=12, ry=9;
+    for(let i=0;i<=n;i++){
+      const t = (i/n)*Math.PI*2;
+      head.push(pt(hx + rx*Math.cos(t), hy + ry*Math.sin(t)));
+    }
+    strokes.push(head);
+    strokes.push(polyStroke([pt(hx+10,hy), pt(hx+10,20)], false));
+    const flag=[];
+    const fx=hx+10, fy=20;
+    const m = (detail==="low") ? 14 : (detail==="med" ? 18 : 26);
+    for(let i=0;i<=m;i++){
+      const t=i/m;
+      flag.push(pt(fx + 26*t, fy + 10*Math.sin(t*Math.PI)));
+    }
+    strokes.push(flag);
+  }
+
+  if(kind==="poop"){
+    strokes.push(polyStroke([pt(20,92), pt(80,92), pt(74,70), pt(26,70)], true));
+    strokes.push(arcStroke(50,64,28, Math.PI*1.05, Math.PI*3.05, steps));
+    strokes.push(arcStroke(50,52,20, Math.PI*1.05, Math.PI*3.05, stepsSmall+12));
+    strokes.push(arcStroke(50,42,12, Math.PI*1.05, Math.PI*3.05, stepsSmall+8));
+    const tip=[];
+    const nn=(detail==="low") ? 36 : (detail==="med" ? 52 : 78);
+    for(let i=0;i<=nn;i++){
+      const t=i/nn * Math.PI*2.2;
+      const rr=6 - 4*(i/nn);
+      tip.push(pt(50 + rr*Math.cos(t), 34 + rr*Math.sin(t)));
+    }
+    strokes.push(tip);
+    strokes.push(circleStroke(42,66,4,stepsSmall));
+    strokes.push(circleStroke(58,66,4,stepsSmall));
+  }
+
+  if(kind==="peace"){
+    strokes.push(circleStroke(cx,cy,40,steps));
+    strokes.push(polyStroke([pt(cx,cy-40), pt(cx,cy+40)], false));
+    strokes.push(polyStroke([pt(cx,cy), pt(cx-26,cy+26)], false));
+    strokes.push(polyStroke([pt(cx,cy), pt(cx+26,cy+26)], false));
+  }
+
+  return strokes;
+}
+
+/** =========================
+ *  Simple block font
+ *  ========================= */
+const FONT = {
+  "A":[[[0,1],[0.5,0],[1,1]],[[0.2,0.65],[0.8,0.65]]],
+  "B":[[[0,0],[0,1],[0.65,1],[0.8,0.85],[0.65,0.7],[0,0.7],[0.65,0.7],[0.85,0.5],[0.65,0.3],[0,0.3],[0.65,0.3],[0.8,0.15],[0.65,0],[0,0]]],
+  "C":[[[0.9,0.1],[0.7,0],[0.2,0],[0,0.2],[0,0.8],[0.2,1],[0.7,1],[0.9,0.9]]],
+  "D":[[[0,0],[0,1],[0.6,1],[0.9,0.75],[0.9,0.25],[0.6,0],[0,0]]],
+  "E":[[[0.9,0],[0,0],[0,1],[0.9,1]],[[0,0.5],[0.7,0.5]]],
+  "F":[[[0,0],[0,1],[0.9,1]],[[0,0.5],[0.7,0.5]]],
+  "G":[[[0.9,0.2],[0.7,0],[0.2,0],[0,0.2],[0,0.8],[0.2,1],[0.7,1],[0.9,0.8],[0.55,0.8],[0.55,0.55],[0.9,0.55]]],
+  "H":[[[0,0],[0,1]],[[1,0],[1,1]],[[0,0.5],[1,0.5]]],
+  "I":[[[0,0],[1,0]],[[0.5,0],[0.5,1]],[[0,1],[1,1]]],
+  "J":[[[1,0],[1,0.8],[0.8,1],[0.3,1],[0.1,0.8]]],
+  "K":[[[0,0],[0,1]],[[1,0],[0,0.55],[1,1]]],
+  "L":[[[0,0],[0,1],[0.9,1]]],
+  "M":[[[0,1],[0,0],[0.5,0.55],[1,0],[1,1]]],
+  "N":[[[0,1],[0,0],[1,1],[1,0]]],
+  "O":[[[0.2,0],[0.8,0],[1,0.2],[1,0.8],[0.8,1],[0.2,1],[0,0.8],[0,0.2],[0.2,0]]],
+  "P":[[[0,1],[0,0],[0.7,0],[0.9,0.2],[0.9,0.45],[0.7,0.6],[0,0.6]]],
+  "Q":[[[0.2,0],[0.8,0],[1,0.2],[1,0.8],[0.8,1],[0.2,1],[0,0.8],[0,0.2],[0.2,0]],[[0.6,0.7],[1,1]]],
+  "R":[[[0,1],[0,0],[0.7,0],[0.9,0.2],[0.9,0.45],[0.7,0.6],[0,0.6]],[[0.55,0.6],[1,1]]],
+  "S":[[[0.9,0.15],[0.7,0],[0.2,0],[0,0.2],[0.2,0.4],[0.7,0.6],[0.9,0.8],[0.7,1],[0.2,1],[0,0.85]]],
+  "T":[[[0,0],[1,0]],[[0.5,0],[0.5,1]]],
+  "U":[[[0,0],[0,0.8],[0.2,1],[0.8,1],[1,0.8],[1,0]]],
+  "V":[[[0,0],[0.5,1],[1,0]]],
+  "W":[[[0,0],[0.25,1],[0.5,0.55],[0.75,1],[1,0]]],
+  "X":[[[0,0],[1,1]],[[1,0],[0,1]]],
+  "Y":[[[0,0],[0.5,0.5],[1,0]],[[0.5,0.5],[0.5,1]]],
+  "Z":[[[0,0],[1,0],[0,1],[1,1]]],
+  "0":[[[0.2,0],[0.8,0],[1,0.2],[1,0.8],[0.8,1],[0.2,1],[0,0.8],[0,0.2],[0.2,0]]],
+  "1":[[[0.5,0],[0.5,1]],[[0.35,0.15],[0.5,0]]],
+  "2":[[[0.1,0.25],[0.3,0],[0.8,0],[1,0.2],[0.9,0.45],[0.1,1],[1,1]]],
+  "3":[[[0.2,0],[0.8,0],[1,0.2],[0.8,0.45],[0.6,0.5],[0.8,0.55],[1,0.8],[0.8,1],[0.2,1]]],
+  "4":[[[0.8,0],[0.8,1]],[[0.1,0.6],[1,0.6]],[[0.1,0.6],[0.7,0]]],
+  "5":[[[1,0],[0.2,0],[0.1,0.4],[0.7,0.4],[1,0.6],[0.8,1],[0.2,1],[0,0.85]]],
+  "6":[[[0.9,0.2],[0.7,0],[0.2,0],[0,0.3],[0,0.8],[0.2,1],[0.7,1],[0.9,0.8],[0.7,0.6],[0.2,0.6],[0,0.8]]],
+  "7":[[[0,0],[1,0],[0.2,1]]],
+  "8":[[[0.2,0],[0.8,0],[1,0.2],[0.8,0.45],[0.2,0.45],[0,0.2],[0.2,0],[0.2,0.45],[0.8,0.45],[1,0.7],[0.8,1],[0.2,1],[0,0.7],[0.2,0.45]]],
+  "9":[[[0.1,0.8],[0.3,1],[0.8,1],[1,0.7],[1,0.2],[0.8,0],[0.3,0],[0.1,0.2],[0.3,0.4],[0.8,0.4],[1,0.2]]],
+  " ":[]
+};
+
+function makeTextStrokes(text, style, letterSpaceMM, targetHeightMM){
+  const clean = (text||"").toUpperCase().replace(/[^A-Z0-9 ]/g,"");
+  const baseAdvance = 1.25;
+
+  let strokes=[];
+  let xCursor=0;
+  for(const ch of clean){
+    const glyph = FONT[ch] || [];
+    for(const seg of glyph){
+      strokes.push(seg.map(([x,y]) => pt(x + xCursor, y)));
+    }
+    xCursor += baseAdvance;
+  }
+  let bb=bbox(strokes);
+  const hUnits = Math.max(bb.h, 1e-6);
+  const s = targetHeightMM / hUnits;
+  const extraUnits = letterSpaceMM / s;
+
+  strokes=[];
+  xCursor=0;
+  for(const ch of clean){
+    const glyph = FONT[ch] || [];
+    for(const seg of glyph){
+      strokes.push(seg.map(([x,y]) => pt(x + xCursor, y)));
+    }
+    xCursor += (baseAdvance + extraUnits);
+  }
+
+  bb=bbox(strokes);
+  strokes = strokes.map(st => translateStroke(st, -bb.minX, -bb.minY));
+  strokes = strokes.map(st => scaleStroke(st, s, s));
+
+  if(style==="single") return strokes;
+
+  const out = strokes.slice();
+  if(style==="bold"){
+    const off = Math.max(1.5, targetHeightMM*0.06);
+    out.push(...strokes.map(st => translateStroke(st, off, 0)));
+    return out;
+  }
+  if(style==="shadow"){
+    const off = Math.max(2.5, targetHeightMM*0.10);
+    out.push(...strokes.map(st => translateStroke(st, off, off)));
+    return out;
+  }
+  return out;
+}
+
+/** =========================
+ *  Fit to mm drawing area
+ *  ========================= */
+function fitToArea(strokes, W, H, margin){
+  const bb=bbox(strokes);
+  const usableW = Math.max(1, W - 2*margin);
+  const usableH = Math.max(1, H - 2*margin);
+  const s = Math.min(usableW / Math.max(bb.w,1e-6), usableH / Math.max(bb.h,1e-6));
+
+  let out = strokes.map(st => translateStroke(st, -bb.minX, -bb.minY));
+  out = out.map(st => scaleStroke(st, s, s));
+
+  const bb2=bbox(out);
+  const dx = margin + (usableW - bb2.w)/2;
+  const dy = margin + (usableH - bb2.h)/2;
+  out = out.map(st => translateStroke(st, dx, dy));
+  return out;
+}
+
+/** =========================
+ *  Preview
+ *  ========================= */
+function drawPreview(canvas, strokes, W, H){
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const pad=30;
+  const s = Math.min((canvas.width-2*pad)/W, (canvas.height-2*pad)/H);
+  const ox=pad, oy=pad;
+
+  ctx.strokeStyle="#bbb";
+  ctx.setLineDash([6,6]);
+  ctx.strokeRect(ox, oy, W*s, H*s);
+  ctx.setLineDash([]);
+
+  ctx.fillStyle="red";
+  ctx.beginPath();
+  ctx.arc(ox+6, oy+6, 5, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle="#333";
+  ctx.font="14px system-ui";
+  ctx.fillText("Start", ox+18, oy+10);
+
+  ctx.strokeStyle="#111";
+  ctx.lineWidth=2;
+  for(const st of strokes){
+    if(st.length<2) continue;
+    ctx.beginPath();
+    ctx.moveTo(ox + st[0].x*s, oy + st[0].y*s);
+    for(let i=1;i<st.length;i++){
+      ctx.lineTo(ox + st[i].x*s, oy + st[i].y*s);
+    }
+    ctx.stroke();
+  }
+}
+
+/** =========================
+ *  Generate VEX IQ Python
+ *  Adaptive detail + correct connected turns
+ *  ========================= */
+function genPython(strokes, opts){
+  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+
+  const driveVel = clamp(opts.driveVel, 1, 100);
+  const turnVel  = clamp(opts.turnVel,  1, 100);
+
+  // ADAPTIVE SIMPLIFICATION:
+  // Big strokes can use opts.minSeg.
+  // Small strokes (eyes, tiny circles) automatically get smaller min segment so they don't become dashed.
+  const simp = strokes
+    .map(st => {
+      const bb = strokeBBox(st);
+      const diag = Math.hypot(bb.w, bb.h); // strokes are already mm
+      const minSegEff = Math.min(
+        opts.minSeg,
+        Math.max(1.0, diag / 24.0)
+      );
+      return simplifyByMinSeg(st, minSegEff, opts.forceClose);
+    })
+    .filter(st => st.length>=2);
+
+  let py = "";
+  py += "from vex import *\n";
+  py += "import math\n\n";
+
+  py += "# =========================\n";
+  py += "# VEX IQ Pen Plotter Setup\n";
+  py += "# Ports: Left=1, Right=6 (reversed), Pen=7\n";
+  py += "# Place robot at START dot, facing RIGHT.\n";
+  py += "# =========================\n\n";
+
+  py += "brain = Brain()\n";
+  py += "brain_inertial = Inertial()\n\n";
+
+  py += "left_drive  = Motor(Ports.PORT1, 1.0, False)\n";
+  py += "right_drive = Motor(Ports.PORT6, 1.0, True)\n\n";
+
+  py += "pen = Motor(Ports.PORT7, 1.0, False)\n";
+  py += "pen.set_stopping(HOLD)\n";
+  py += "pen.set_position(0, DEGREES)  # Baseline: pen DOWN at 0 degrees\n\n";
+
+  py += "drivetrain = SmartDrive(left_drive, right_drive, brain_inertial, 200, 173, 76, MM, 1)\n";
+  py += `drivetrain.set_drive_velocity(${Math.round(driveVel)}, PERCENT)\n`;
+  py += `drivetrain.set_turn_velocity(${Math.round(turnVel)}, PERCENT)\n`;
+  py += "drivetrain.set_stopping(BRAKE)\n\n";
+
+  py += "# ---- Options from generator ----\n";
+  py += `CONNECTED_LINES = ${opts.connected ? "True" : "False"}\n`;
+  py += `TURN_LIFT_DEG   = ${Math.round(clamp(opts.turnLiftDeg,0,180))}\n`;
+  py += `DIST_GAIN       = ${Number(opts.distGain).toFixed(2)}\n`;
+  py += `PEN_WAIT_MS     = ${Math.round(clamp(opts.penWaitMs,0,500))}\n\n`;
+
+  py += "# ---- Pen positions ----\n";
+  py += "PEN_DOWN_DEG = 0\n";
+  py += `PEN_UP_DEG   = ${Math.round(opts.penUpDeg)}\n`;
+  py += "PEN_VEL      = 60  # %\n\n";
+
+  py += "pen_is_down = False\n\n";
+
+  py += "def pen_down():\n";
+  py += "    global pen_is_down\n";
+  py += "    if not pen_is_down:\n";
+  py += "        pen.spin_to_position(PEN_DOWN_DEG, DEGREES, PEN_VEL, PERCENT, True)\n";
+  py += "        wait(PEN_WAIT_MS, MSEC)\n";
+  py += "        pen_is_down = True\n\n";
+
+  py += "def pen_up():\n";
+  py += "    global pen_is_down\n";
+  py += "    if pen_is_down:\n";
+  py += "        pen.spin_to_position(PEN_UP_DEG, DEGREES, PEN_VEL, PERCENT, True)\n";
+  py += "        wait(PEN_WAIT_MS, MSEC)\n";
+  py += "        pen_is_down = False\n\n";
+
+  py += "def heading_delta(a, b):\n";
+  py += "    d = (a - b + 540) % 360 - 180\n";
+  py += "    return abs(d)\n\n";
+
+  py += "# ---- Calibrate inertial ----\n";
+  py += "brain.screen.clear_screen()\n";
+  py += "brain.screen.set_cursor(1,1)\n";
+  py += "brain.screen.print('Calibrating...')\n";
+  py += "brain_inertial.calibrate()\n";
+  py += "while brain_inertial.is_calibrating():\n";
+  py += "    wait(50, MSEC)\n";
+  py += "drivetrain.set_heading(0, DEGREES)\n";
+  py += "last_heading = 0.0\n";
+  py += "last_draw_heading = None\n";
+  py += "brain.screen.clear_screen()\n";
+  py += "brain.screen.set_cursor(1,1)\n";
+  py += "brain.screen.print('Ready')\n\n";
+
+  py += "# Internal pose (mm) in drawing-space\n";
+  py += "cur_x = 0.0\n";
+  py += "cur_y = 0.0\n\n";
+
+  // Slightly longer settle helps closure/accuracy
+  py += "TURN_SETTLE_MS  = 60\n";
+  py += "DRIVE_SETTLE_MS = 35\n\n";
+
+  py += "def go_to(x_mm, y_mm, draw):\n";
+  py += "    global cur_x, cur_y, last_heading, last_draw_heading\n";
+  py += "    dx = x_mm - cur_x\n";
+  py += "    dy = y_mm - cur_y\n";
+  py += "    d  = math.sqrt(dx*dx + dy*dy)\n";
+  py += "    if d < 0.5:\n";
+  py += "        return\n";
+  py += "    target = (math.degrees(math.atan2(dy, dx)) + 360.0) % 360.0\n\n";
+
+  py += "    # Travel moves: pen UP.\n";
+  py += "    if not draw:\n";
+  py += "        pen_up()\n";
+  py += "    else:\n";
+  py += "        if CONNECTED_LINES:\n";
+  py += "            # First segment of a stroke: do NOT compare to travel heading\n";
+  py += "            if last_draw_heading is None:\n";
+  py += "                pen_down()\n";
+  py += "            else:\n";
+  py += "                if heading_delta(target, last_draw_heading) > TURN_LIFT_DEG:\n";
+  py += "                    pen_up()\n";
+  py += "                else:\n";
+  py += "                    pen_down()\n";
+  py += "        else:\n";
+  py += "            pen_up()\n\n";
+
+  py += "    drivetrain.turn_to_heading(target, DEGREES)\n";
+  py += "    wait(TURN_SETTLE_MS, MSEC)\n";
+  py += "    last_heading = target\n\n";
+
+  py += "    if draw:\n";
+  py += "        pen_down()\n";
+  py += "    drivetrain.drive_for(FORWARD, d * DIST_GAIN, MM)\n";
+  py += "    wait(DRIVE_SETTLE_MS, MSEC)\n";
+  py += "    cur_x = x_mm\n";
+  py += "    cur_y = y_mm\n";
+  py += "    if draw:\n";
+  py += "        last_draw_heading = target\n\n";
+
+  py += "# Baseline: pen DOWN at 0 degrees, then lift before first travel\n";
+  py += "pen_down()\n";
+  py += "pen_up()\n\n";
+
+  py += "# ---- Draw strokes ----\n";
+  for(let si=0; si<simp.length; si++){
+    const st = simp[si];
+    const p0 = st[0];
+    py += `# Stroke ${si+1}\n`;
+    py += "last_draw_heading = None\n";
+    py += `go_to(${p0.x.toFixed(1)}, ${p0.y.toFixed(1)}, False)\n`;
+    py += "pen_down()\n";
+    for(let i=1;i<st.length;i++){
+      const p=st[i];
+      py += `go_to(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, True)\n`;
+    }
+    py += "pen_up()\n";
+    py += "last_draw_heading = None\n\n";
+  }
+
+  py += "drivetrain.stop()\n";
+  py += "brain.screen.clear_screen()\n";
+  py += "brain.screen.set_cursor(1,1)\n";
+  py += "brain.screen.print('Done')\n";
+
+  return py;
+}
+
+/** =========================
+ *  Main update
+ *  ========================= */
+function update(){
+  const mode = document.getElementById("mode").value;
+  const emoji = document.getElementById("emoji").value;
+  const text = document.getElementById("text").value;
+  const textStyle = document.getElementById("textStyle").value;
+
+  const W = Number(document.getElementById("wmm").value);
+  const H = Number(document.getElementById("hmm").value);
+  const margin = Number(document.getElementById("margin").value);
+  const detail = document.getElementById("detail").value;
+
+  const driveVel = Number(document.getElementById("driveVel").value);
+  const turnVel  = Number(document.getElementById("turnVel").value);
+  const minSeg   = Number(document.getElementById("minSeg").value);
+  const penUpDeg = Number(document.getElementById("penUpDeg").value);
+  const penWaitMs = Number(document.getElementById("penWaitMs").value);
+  const distGain = Number(document.getElementById("distGain").value);
+  const letterSpace = Number(document.getElementById("letterSpace").value);
+
+  const connected = document.getElementById("connected").checked;
+  const turnLiftDeg = Number(document.getElementById("turnLiftDeg").value);
+  const forceClose = document.getElementById("forceClose").checked;
+
+  let strokes = [];
+  if(mode==="emoji"){
+    strokes = makeEmoji(emoji, detail);
+  } else {
+    const targetHeightMM = Math.max(20, H*0.45);
+    strokes = makeTextStrokes(text, textStyle, letterSpace, targetHeightMM);
+  }
+
+  strokes = fitToArea(strokes, W, H, margin);
+
+  const cv=document.getElementById("cv");
+  drawPreview(cv, strokes, W, H);
+
+  const py = genPython(strokes, {
+    driveVel, turnVel, minSeg, penUpDeg, penWaitMs, distGain,
+    connected, turnLiftDeg, forceClose
+  });
+  document.getElementById("out").value = py;
+}
+
+document.getElementById("btn").addEventListener("click", update);
+document.getElementById("copy").addEventListener("click", ()=>{
+  const ta=document.getElementById("out");
+  ta.focus();
+  ta.select();
+  document.execCommand("copy");
+});
+
+function syncUI(){
+  const mode = document.getElementById("mode").value;
+  document.getElementById("emoji").disabled = (mode!=="emoji");
+  document.getElementById("text").disabled  = (mode!=="text");
+  document.getElementById("textStyle").disabled = (mode!=="text");
+}
+document.getElementById("mode").addEventListener("change", ()=>{ syncUI(); update(); });
+
+syncUI();
+update();
+</script>
+</body>
+</html>
