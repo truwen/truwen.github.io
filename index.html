@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Personal site hosted on GitHub Pages." />
+  <title>Your Name — GitHub Pages</title>
+
+  <style>
+    :root{
+      --bg: #0b0f19;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.08);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.72);
+      --muted2: rgba(255,255,255,0.60);
+      --border: rgba(255,255,255,0.14);
+      --shadow: 0 12px 40px rgba(0,0,0,0.35);
+      --accent: #7dd3fc;     /* sky */
+      --accent2: #a78bfa;    /* violet */
+      --ok: #34d399;
+      --warn: #fbbf24;
+      --radius: 16px;
+      --radius2: 22px;
+      --max: 1040px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    /* Light theme (toggled) */
+    [data-theme="light"]{
+      --bg: #f7fafc;
+      --panel: rgba(17,24,39,0.05);
+      --panel2: rgba(17,24,39,0.07);
+      --text: rgba(17,24,39,0.92);
+      --muted: rgba(17,24,39,0.70);
+      --muted2: rgba(17,24,39,0.60);
+      --border: rgba(17,24,39,0.14);
+      --shadow: 0 12px 30px rgba(17,24,39,0.10);
+      --accent: #0284c7;
+      --accent2: #6d28d9;
+    }
+
+    *{ box-sizing: border-box; }
+    html{ scroll-behavior: smooth; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 700px at 10% 10%, rgba(125,211,252,0.18), transparent 55%),
+        radial-gradient(900px 600px at 85% 20%, rgba(167,139,250,0.16), transparent 55%),
+        radial-gradient(900px 700px at 30% 90%, rgba(52,211,153,0.10), transparent 55%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    a{ color: inherit; text-decoration: none; }
+    a:hover{ text-decoration: underline; text-underline-offset: 3px; }
+
+    .wrap{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+
+    /* Header */
+    header{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(0,0,0,0.20), rgba(0,0,0,0.0));
+    }
+    [data-theme="light"] header{
+      background: linear-gradient(to bottom, rgba(255,255,255,0.75), rgba(255,255,255,0.0));
+    }
+    .nav{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 750;
+      letter-spacing: 0.2px;
+    }
+    .logo{
+      width: 34px; height: 34px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: var(--shadow);
+    }
+    nav ul{
+      list-style:none; margin:0; padding:0;
+      display:flex; align-items:center; gap: 12px;
+      flex-wrap: wrap;
+    }
+    .chip{
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+    }
+    [data-theme="light"] .chip{ box-shadow: 0 6px 14px rgba(17,24,39,0.06); }
+    .chip:hover{
+      background: var(--panel2);
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .btn{
+      cursor:pointer;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .btn:hover{ background: var(--panel2); }
+    .btn:active{ transform: translateY(1px); }
+
+    /* Hero */
+    .hero{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    @media (max-width: 860px){
+      .hero{ grid-template-columns: 1fr; }
+    }
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius2);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1{
+      margin: 6px 0 8px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.06;
+      letter-spacing: -0.6px;
+    }
+    .sub{
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.55;
+      margin: 0 0 14px;
+      max-width: 62ch;
+    }
+    .pillrow{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .pill{
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.12);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    [data-theme="light"] .pill{ background: rgba(255,255,255,0.8); }
+
+    .ctaRow{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .cta{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-weight: 650;
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+    .cta.primary{
+      background: linear-gradient(135deg, rgba(125,211,252,0.18), rgba(167,139,250,0.16));
+      border-color: rgba(125,211,252,0.35);
+    }
+    .cta:hover{ background: var(--panel2); text-decoration: none; }
+    .cta.primary:hover{ background: linear-gradient(135deg, rgba(125,211,252,0.24), rgba(167,139,250,0.22)); }
+
+    /* Right side hero info */
+    .statGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .stat{
+      padding: 14px;
+      border-radius: var(--radius);
+      background: rgba(0,0,0,0.10);
+      border: 1px solid var(--border);
+      min-height: 86px;
+    }
+    [data-theme="light"] .stat{ background: rgba(255,255,255,0.75); }
+    .k{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .v{
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.3;
+      font-weight: 650;
+    }
+
+    /* Sections */
+    section{ margin-top: 18px; }
+    .sectionHead{
+      display:flex;
+      align-items:flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 22px 0 10px;
+    }
+    h2{
+      margin:0;
+      font-size: 20px;
+      letter-spacing: -0.2px;
+    }
+    .hint{
+      color: var(--muted2);
+      font-size: 13px;
+    }
+
+    .grid3{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 900px){
+      .grid3{ grid-template-columns: 1fr; }
+    }
+
+    .item{
+      padding: 16px;
+      border-radius: var(--radius2);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.10);
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 160px;
+    }
+    [data-theme="light"] .item{ box-shadow: 0 10px 22px rgba(17,24,39,0.06); }
+    .itemTitle{
+      font-weight: 750;
+      letter-spacing: -0.2px;
+      font-size: 16px;
+      margin: 0;
+    }
+    .itemDesc{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+    .tagRow{ display:flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+    .tag{
+      font-size: 12px;
+      color: var(--muted2);
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.10);
+      padding: 6px 9px;
+      border-radius: 999px;
+    }
+    [data-theme="light"] .tag{ background: rgba(255,255,255,0.75); }
+
+    /* Footer */
+    footer{
+      margin-top: 26px;
+      color: var(--muted2);
+      font-size: 13px;
+      text-align: center;
+      padding: 26px 0 0;
+    }
+
+    /* Small toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+      max-width: calc(100vw - 26px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    [data-theme="light"] .toast{
+      background: rgba(255,255,255,0.85);
+      color: rgba(17,24,39,0.92);
+    }
+    .toast.show{ opacity: 1; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div style="font-size:14px; line-height:1.1;">Your Name</div>
+          <div style="font-size:12px; color:var(--muted2); line-height:1.1;">GitHub Pages</div>
+        </div>
+      </div>
+
+      <nav aria-label="Primary">
+        <ul>
+          <li><a class="chip" href="#about">About</a></li>
+          <li><a class="chip" href="#projects">Projects</a></li>
+          <li><a class="chip" href="#resources">Resources</a></li>
+          <li><a class="chip" href="#contact">Contact</a></li>
+          <li>
+            <button id="themeBtn" class="btn" type="button" aria-label="Toggle theme">
+              <span id="themeIcon" aria-hidden="true">🌙</span>
+              <span id="themeLabel">Dark</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" aria-label="Intro">
+      <div class="card">
+        <div class="pillrow" aria-label="Highlights">
+          <span class="pill">🚀 Hosted on GitHub Pages</span>
+          <span class="pill">📱 Mobile-friendly</span>
+          <span class="pill">🌓 Theme toggle</span>
+        </div>
+
+        <h1>Build. Teach. Make.<br/>Share what you’re working on.</h1>
+        <p class="sub">
+          This is a simple, clean starter site. Edit the sections below to fit your goals:
+          portfolio, classroom resources, personal projects, or a mix of everything.
+        </p>
+
+        <div class="ctaRow">
+          <a class="cta primary" href="#projects">See projects →</a>
+          <a class="cta" href="https://github.com/" target="_blank" rel="noreferrer">GitHub profile ↗</a>
+          <button class="cta" type="button" id="copyBtn">Copy site link</button>
+        </div>
+      </div>
+
+      <aside class="card" aria-label="Quick info">
+        <div class="sectionHead" style="margin:0 0 10px;">
+          <h2 style="font-size:18px;">Quick Info</h2>
+          <span class="hint">Edit these</span>
+        </div>
+
+        <div class="statGrid">
+          <div class="stat">
+            <div class="k">Focus</div>
+            <div class="v">Robotics • Coding • Teaching</div>
+          </div>
+          <div class="stat">
+            <div class="k">Location</div>
+            <div class="v">Your City, WA</div>
+          </div>
+          <div class="stat">
+            <div class="k">Currently</div>
+            <div class="v">Building a class project</div>
+          </div>
+          <div class="stat">
+            <div class="k">Contact</div>
+            <div class="v"><a href="#contact">Scroll to contact</a></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 12px; color: var(--muted); font-size: 14px; line-height: 1.55;">
+          Tip: Keep this page as one file (easy), or split into folders later
+          (e.g., <span style="font-family:var(--mono);">/assets</span>, <span style="font-family:var(--mono);">/projects</span>).
+        </div>
+      </aside>
+    </section>
+
+    <section id="about" aria-label="About">
+      <div class="sectionHead">
+        <h2>About</h2>
+        <div class="hint">2–3 sentences is perfect</div>
+      </div>
+
+      <div class="card">
+        <p style="margin:0; color:var(--muted); line-height:1.7;">
+          Write a short intro here. What you do, what you’re building, and what you care about.
+          If you’re a teacher, this can be your “why.” If you’re showcasing projects, mention the tools you use.
+        </p>
+
+        <div class="pillrow" style="margin-top: 14px;">
+          <span class="pill">VEX IQ</span>
+          <span class="pill">Micro:bit</span>
+          <span class="pill">3D Printing</span>
+          <span class="pill">Python</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" aria-label="Projects">
+      <div class="sectionHead">
+        <h2>Projects</h2>
+        <div class="hint">Replace these cards with your own</div>
+      </div>
+
+      <div class="grid3">
+        <article class="item">
+          <h3 class="itemTitle">Project One</h3>
+          <p class="itemDesc">
+            A short description of what you built, what problem it solves, and what you learned.
+          </p>
+          <div class="tagRow">
+            <span class="tag">Hardware</span>
+            <span class="tag">Robotics</span>
+            <a class="tag" href="#" title="Add your repo link">Repo ↗</a>
+          </div>
+        </article>
+
+        <article class="item">
+          <h3 class="itemTitle">Project Two</h3>
+          <p class="itemDesc">
+            Another project. Add a link to a demo video, write-up, or lesson plan.
+          </p>
+          <div class="tagRow">
+            <span class="tag">Python</span>
+            <span class="tag">Classroom</span>
+            <a class="tag" href="#" title="Add your link">Demo ↗</a>
+          </div>
+        </article>
+
+        <article class="item">
+          <h3 class="itemTitle">Project Three</h3>
+          <p class="itemDesc">
+            Keep it simple. If you don’t have three projects yet, list ideas-in-progress.
+          </p>
+          <div class="tagRow">
+            <span class="tag">In progress</span>
+            <span class="tag">Design</span>
+            <a class="tag" href="#" title="Add your link">Notes ↗</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="resources" aria-label="Resources">
+      <div class="sectionHead">
+        <h2>Resources</h2>
+        <div class="hint">Handouts, guides, links</div>
+      </div>
+
+      <div class="grid3">
+        <article class="item">
+          <h3 class="itemTitle">Classroom Docs</h3>
+          <p class="itemDesc">Put links to printable PDFs, slides, or unit pages.</p>
+          <div class="tagRow">
+            <a class="tag" href="#">Syllabus ↗</a>
+            <a class="tag" href="#">Weekly Plan ↗</a>
+          </div>
+        </article>
+
+        <article class="item">
+          <h3 class="itemTitle">Code Snippets</h3>
+          <p class="itemDesc">Share small code examples students can remix.</p>
+          <div class="tagRow">
+            <a class="tag" href="#">Starter Repo ↗</a>
+            <a class="tag" href="#">Examples ↗</a>
+          </div>
+        </article>
+
+        <article class="item">
+          <h3 class="itemTitle">Recommended Tools</h3>
+          <p class="itemDesc">List apps, kits, or workflows that help.</p>
+          <div class="tagRow">
+            <span class="tag">VEXcode</span>
+            <span class="tag">Canva</span>
+            <span class="tag">GitHub</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="contact" aria-label="Contact">
+      <div class="sectionHead">
+        <h2>Contact</h2>
+        <div class="hint">Replace with your info</div>
+      </div>
+
+      <div class="card">
+        <p style="margin:0 0 12px; color:var(--muted); line-height:1.7;">
+          Easiest: link your GitHub, email, and (optional) a form.
+        </p>
+
+        <div class="pillrow">
+          <a class="chip" href="mailto:you@example.com">📧 you@example.com</a>
+          <a class="chip" href="https://github.com/your-username" target="_blank" rel="noreferrer">🐙 github.com/your-username ↗</a>
+          <a class="chip" href="https://www.linkedin.com/" target="_blank" rel="noreferrer">💼 LinkedIn ↗</a>
+        </div>
+
+        <div style="margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--muted2);">
+          Last updated: <span id="updated"></span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div>© <span id="year"></span> Your Name • Built with plain HTML/CSS • Hosted on GitHub Pages</div>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const themeBtn = document.getElementById("themeBtn");
+      const themeIcon = document.getElementById("themeIcon");
+      const themeLabel = document.getElementById("themeLabel");
+      const toast = document.getElementById("toast");
+
+      const storageKey = "site_theme";
+      const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+
+      function showToast(msg){
+        toast.textContent = msg;
+        toast.classList.add("show");
+        window.clearTimeout(showToast._t);
+        showToast._t = window.setTimeout(() => toast.classList.remove("show"), 1600);
+      }
+
+      function applyTheme(theme){
+        root.setAttribute("data-theme", theme);
+        themeIcon.textContent = theme === "light" ? "☀️" : "🌙";
+        themeLabel.textContent = theme === "light" ? "Light" : "Dark";
+      }
+
+      const saved = localStorage.getItem(storageKey);
+      const initial = saved || (prefersLight ? "light" : "dark");
+      applyTheme(initial);
+
+      themeBtn.addEventListener("click", () => {
+        const current = root.getAttribute("data-theme") || "dark";
+        const next = current === "light" ? "dark" : "light";
+        localStorage.setItem(storageKey, next);
+        applyTheme(next);
+        showToast(`Theme: ${next}`);
+      });
+
+      // Footer bits
+      document.getElementById("year").textContent = new Date().getFullYear();
+      document.getElementById("updated").textContent = new Date().toLocaleDateString(undefined, {
+        year: "numeric", month: "short", day: "2-digit"
+      });
+
+      // Copy current URL
+      const copyBtn = document.getElementById("copyBtn");
+      copyBtn.addEventListener("click", async () => {
+        const url = window.location.href;
+        try{
+          await navigator.clipboard.writeText(url);
+          showToast("Copied site link!");
+        }catch{
+          showToast("Copy failed — select URL manually.");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
